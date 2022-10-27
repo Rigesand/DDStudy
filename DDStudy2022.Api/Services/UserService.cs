@@ -33,9 +33,9 @@ public class UserService : IUserService
             .ToListAsync();
     }
 
-    public async Task<bool> FindByMail(CreateUserModel user)
+    public async Task<bool> FindByMail(string email)
     {
-        var isExist = await _context.Users.AnyAsync(it => it.Email == user.Email);
+        var isExist = await _context.Users.AnyAsync(it => it.Email == email);
         return isExist;
     }
 }

@@ -6,5 +6,5 @@ public interface IUserService
 {
     public Task CreateUser(CreateUserModel user);
     public Task<IEnumerable<UserModel>> GetAllUsers();
-    public Task<bool> FindByMail(CreateUserModel user);
+    public Task<bool> FindByMail(string email);
 }

@@ -1,7 +1,11 @@
 using DDStudy2022.Api;
 using DDStudy2022.Api.Interfaces;
+using DDStudy2022.Api.Middlewares;
+using DDStudy2022.Api.Models;
 using DDStudy2022.Api.Services;
+using DDStudy2022.Api.Validators;
 using DDStudy2022.DAL;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +16,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IUserService, UserService>();
 
+//Регистрация валидаторов
+builder.Services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -38,7 +44,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseValidationException();
 app.MapControllers();
 
 app.Run();

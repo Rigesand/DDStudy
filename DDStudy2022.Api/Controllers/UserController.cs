@@ -1,5 +1,6 @@
 ﻿using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDStudy2022.Api.Controllers;
@@ -9,10 +10,14 @@ namespace DDStudy2022.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IValidator<CreateUserModel> _createValidator;
 
-    public UserController(IUserService userService)
+    public UserController(
+        IUserService userService,
+        IValidator<CreateUserModel> createValidator)
     {
         _userService = userService;
+        _createValidator = createValidator;
     }
 
     [HttpPost]
@@ -20,12 +25,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreateUser([FromBody] CreateUserModel createUserModel)
     {
-        var isExist = await _userService.FindByMail(createUserModel);
-        if (isExist)
-        {
-            return;
-        }
-
+        await _createValidator.ValidateAndThrowAsync(createUserModel);
         await _userService.CreateUser(createUserModel);
     }
 
