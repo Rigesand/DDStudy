@@ -20,6 +20,12 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreateUser([FromBody] CreateUserModel createUserModel)
     {
+        var isExist = await _userService.FindByMail(createUserModel);
+        if (isExist)
+        {
+            return;
+        }
+
         await _userService.CreateUser(createUserModel);
     }
 

@@ -32,4 +32,10 @@ public class UserService : IUserService
             .ProjectTo<UserModel>(_mapper.ConfigurationProvider)
             .ToListAsync();
     }
+
+    public async Task<bool> FindByMail(CreateUserModel user)
+    {
+        var isExist = await _context.Users.AnyAsync(it => it.Email == user.Email);
+        return isExist;
+    }
 }
