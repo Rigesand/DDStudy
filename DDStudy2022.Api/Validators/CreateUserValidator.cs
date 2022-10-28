@@ -1,5 +1,5 @@
 ﻿using DDStudy2022.Api.Interfaces;
-using DDStudy2022.Api.Models;
+using DDStudy2022.Api.Models.Users;
 using FluentValidation;
 
 namespace DDStudy2022.Api.Validators;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using DDStudy2022.Api.Models;
+using DDStudy2022.Api.Models.Users;
 using DDStudy2022.Common.Services;
 using DDStudy2022.DAL.Entities;
 
@@ -14,5 +14,8 @@ public class ApiMappingProfile : Profile
             .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashService.GetHash(s.Password!)))
             .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
         CreateMap<User, UserModel>();
+        CreateMap<UpdateUser, User>()
+            .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashService.GetHash(s.Password!)))
+            .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace DDStudy2022.Api.Middlewares
+﻿using DDStudy2022.Common.Exceptions;
+using FluentValidation;
+
+namespace DDStudy2022.Api.Middlewares
 {
     public static class ExceptionMiddleware
     {
@@ -10,18 +13,23 @@
                 {
                     await next(context);
                 }
-                catch (FluentValidation.ValidationException exception)
+                catch (ValidationException exception)
                 {
                     var errors = exception.Errors.Select(x => $"{x.ErrorMessage}");
                     var errorMessage = string.Join(Environment.NewLine, errors);
-                    
+
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {Message = errorMessage});
+                }
+                catch (UserException exception)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new {exception.Message});
                 }
                 catch (Exception)
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { Message = "Внутренняя ошибка сервера" });
+                    await context.Response.WriteAsJsonAsync(new {Message = "Внутренняя ошибка сервера"});
                 }
             });
         }
