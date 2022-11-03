@@ -6,8 +6,13 @@ namespace DDStudy2022.DAL.Configuration;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<User> modelBuilder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
-        modelBuilder.HasKey(it => it.Id);
+        builder.HasKey(it => it.Id);
+
+        builder.HasMany(it => it.Sessions)
+            .WithOne(it => it.User)
+            .HasForeignKey(it => it.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

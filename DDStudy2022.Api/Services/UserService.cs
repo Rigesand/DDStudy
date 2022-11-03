@@ -22,10 +22,7 @@ public class UserService : IUserService, ITokenService
     private readonly DataContext _context;
     private readonly AuthConfig _config;
 
-    public UserService(IMapper mapper,
-        DataContext context,
-        IOptions<AuthConfig> config
-    )
+    public UserService(IMapper mapper, DataContext context, IOptions<AuthConfig> config)
     {
         _mapper = mapper;
         _context = context;
@@ -34,7 +31,7 @@ public class UserService : IUserService, ITokenService
 
     private async Task<User> GetUserById(Guid id)
     {
-        var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
         if (user == null)
             throw new UserException("User not found");
         return user;
@@ -50,17 +47,20 @@ public class UserService : IUserService, ITokenService
         return user;
     }
 
-    private TokenModel GenerateTokens(User user)
+    private TokenModel GenerateTokens(UserSession session)
     {
         var dtNow = DateTime.Now;
+        if (session.User == null)
+            throw new UserException("Session not contains user");
         var jwt = new JwtSecurityToken(
             issuer: _config.Issuer,
             audience: _config.Audience,
             notBefore: dtNow,
             claims: new[]
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name!),
-                new Claim("id", user.Id.ToString())
+                new Claim(ClaimsIdentity.DefaultNameClaimType, session.User.Name!),
+                new Claim("sessionId", session.Id.ToString()),
+                new Claim("id", session.User.Id.ToString())
             },
             expires: DateTime.Now.AddMinutes(_config.LifeTime),
             signingCredentials: new SigningCredentials(_config.SymmetricSecurityKey(),
@@ -72,7 +72,7 @@ public class UserService : IUserService, ITokenService
             notBefore: dtNow,
             claims: new[]
             {
-                new Claim("id", user.Id.ToString()),
+                new Claim("refreshToken", session.RefreshToken.ToString())
             },
             expires: DateTime.Now.AddHours(_config.LifeTime),
             signingCredentials: new SigningCredentials(_config.SymmetricSecurityKey(),
@@ -89,17 +89,24 @@ public class UserService : IUserService, ITokenService
         return tokens;
     }
 
-    public async Task CreateUser(CreateUserModel model)
+    private async Task<UserSession> GetSessionByRefreshToken(Guid id)
     {
-        var dbUser = _mapper.Map<User>(model);
-        await _context.Users.AddAsync(dbUser);
-        await _context.SaveChangesAsync();
+        var session = await _context.Sessions.Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.RefreshToken == id);
+        if (session == null)
+        {
+            throw new UserSessionException("Session is not found");
+        }
+
+        return session;
     }
 
     public async Task UpdateUser(UpdateUser user)
     {
-        var dbUser = await GetUserById(user.Id);
-        dbUser = _mapper.Map<User>(user);
+        var isExists = await _context.Users.AnyAsync(x => x.Id == user.Id);
+        if (!isExists)
+            throw new UserException("User not found");
+        var dbUser = _mapper.Map<User>(user);
         _context.Users.Update(dbUser);
         await _context.SaveChangesAsync();
     }
@@ -111,9 +118,9 @@ public class UserService : IUserService, ITokenService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> FindByMail(string email)
+    public async Task<bool> CheckUserExistsByMail(string email)
     {
-        var isExist = await _context.Users.AnyAsync(it => it.Email == email);
+        var isExist = await _context.Users.AnyAsync(it => it.Email!.ToLower() == email.ToLower());
         return isExist;
     }
 
@@ -133,8 +140,23 @@ public class UserService : IUserService, ITokenService
     public async Task<TokenModel> Login(string login, string password)
     {
         var user = await GetUserByCredential(login, password);
+        var session = await _context.Sessions.AddAsync(
+            new UserSession
+            {
+                User = user,
+                RefreshToken = Guid.NewGuid(),
+                Created = DateTime.UtcNow,
+                Id = Guid.NewGuid()
+            });
+        await _context.SaveChangesAsync();
+        return GenerateTokens(session.Entity);
+    }
 
-        return GenerateTokens(user);
+    public async Task Registration(CreateUserModel model)
+    {
+        var dbUser = _mapper.Map<User>(model);
+        await _context.Users.AddAsync(dbUser);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<TokenModel> GetTokenByRefreshToken(string refreshToken)
@@ -156,13 +178,32 @@ public class UserService : IUserService, ITokenService
             throw new SecurityTokenException("invalid token");
         }
 
-        if (principal.Claims.FirstOrDefault(x => x.Type == "id")?.Value is String userIdString
-            && Guid.TryParse(userIdString, out var userId))
+        if (principal.Claims.FirstOrDefault(x => x.Type == "refreshToken")?.Value is String refreshIdString
+            && Guid.TryParse(refreshIdString, out var refreshId))
         {
-            var user = await GetUserById(userId);
-            return GenerateTokens(user);
+            var session = await GetSessionByRefreshToken(refreshId);
+            if (!session.IsActive)
+            {
+                throw new UserSessionException("Session is not active");
+            }
+
+            session.RefreshToken = Guid.NewGuid();
+            await _context.SaveChangesAsync();
+
+            return GenerateTokens(session);
         }
 
         throw new SecurityTokenException("invalid token");
+    }
+
+    public async Task<UserSession> GetSessionById(Guid id)
+    {
+        var session = await _context.Sessions.FirstOrDefaultAsync(x => x.Id == id);
+        if (session == null)
+        {
+            throw new UserSessionException("Session is not found");
+        }
+
+        return session;
     }
 }

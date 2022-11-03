@@ -16,4 +16,5 @@ public class DataContext : DbContext
     }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserSession> Sessions => Set<UserSession>();
 }

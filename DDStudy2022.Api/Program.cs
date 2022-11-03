@@ -2,6 +2,7 @@ using DDStudy2022.Api;
 using DDStudy2022.Api.Configs;
 using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Middlewares;
+using DDStudy2022.Api.Middlewares.Extensions;
 using DDStudy2022.Api.Models.Users;
 using DDStudy2022.Api.Services;
 using DDStudy2022.Api.Validators;
@@ -105,6 +106,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseTokenValidator();
 app.UseValidationException();
 app.MapControllers();
 

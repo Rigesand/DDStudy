@@ -1,6 +1,6 @@
 ﻿using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models.Users;
-using FluentValidation;
+using DDStudy2022.Common.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,23 +12,10 @@ namespace DDStudy2022.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IValidator<CreateUserModel> _createValidator;
 
-    public UserController(IUserService userService,
-        IValidator<CreateUserModel> createValidator)
+    public UserController(IUserService userService)
     {
         _userService = userService;
-        _createValidator = createValidator;
-    }
-
-    [HttpPost]
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task CreateUser([FromBody] CreateUserModel createUserModel)
-    {
-        await _createValidator.ValidateAndThrowAsync(createUserModel);
-        await _userService.CreateUser(createUserModel);
     }
 
     [HttpPut]
@@ -66,6 +53,6 @@ public class UserController : ControllerBase
             return await _userService.GetUser(userId);
         }
 
-        throw new Exception("You are not authorized");
+        throw new UserException("You are not authorized");
     }
 }
