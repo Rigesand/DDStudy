@@ -17,4 +17,6 @@ public class DataContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<UserSession> Sessions => Set<UserSession>();
+    public DbSet<Attach> Attaches => Set<Attach>();
+    public DbSet<Avatar> Avatars => Set<Avatar>();
 }

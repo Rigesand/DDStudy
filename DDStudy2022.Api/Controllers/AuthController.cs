@@ -10,12 +10,12 @@ namespace DDStudy2022.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly ITokenService _tokenService;
+    private readonly IAuthService _authService;
     private readonly IValidator<CreateUserModel> _createValidator;
 
-    public AuthController(ITokenService tokenService, IValidator<CreateUserModel> createValidator)
+    public AuthController(IAuthService authService, IValidator<CreateUserModel> createValidator)
     {
-        _tokenService = tokenService;
+        _authService = authService;
         _createValidator = createValidator;
     }
 
@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> Login([FromBody] TokenRequestModel model)
     {
-        return await _tokenService.Login(model.Login!, model.Password!);
+        return await _authService.Login(model.Login!, model.Password!);
     }
 
     [HttpPost]
@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
     public async Task Registration([FromBody] CreateUserModel createUserModel)
     {
         await _createValidator.ValidateAndThrowAsync(createUserModel);
-        await _tokenService.Registration(createUserModel);
+        await _authService.Registration(createUserModel);
     }
 
     [HttpPost]
@@ -41,6 +41,6 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> RefreshToken([FromBody] RefreshTokenRequestModel model)
     {
-        return await _tokenService.GetTokenByRefreshToken(model.RefreshToken!);
+        return await _authService.GetTokenByRefreshToken(model.RefreshToken!);
     }
 }

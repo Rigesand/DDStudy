@@ -51,7 +51,8 @@ builder.Services.AddSwaggerGen(c =>
 //Регистрация сервисов
 builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAttachService, AttachService>();
 
 //Регистрация валидаторов
 builder.Services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();
