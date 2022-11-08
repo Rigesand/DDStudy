@@ -1,5 +1,7 @@
 ﻿using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models.Attaches;
+using DDStudy2022.Api.Models.Comments;
+using DDStudy2022.Api.Models.Posts;
 using DDStudy2022.Common.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,38 +14,59 @@ namespace DDStudy2022.Api.Controllers;
 public class UserAccountController : ControllerBase
 {
     private readonly IUserAccountService _userAccountService;
+    private readonly IAttachService _attachService;
 
-    public UserAccountController(IUserAccountService userAccountService)
+    public UserAccountController(IUserAccountService userAccountService, IAttachService attachService)
     {
         _userAccountService = userAccountService;
+        _attachService = attachService;
     }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task AddAvatarToUser(MetadataModel model)
+    public async Task AddAvatarToUser([FromBody] MetadataModel model)
     {
         var userIdString = User.Claims.FirstOrDefault(x => x.Type == "userAccountId")?.Value;
-        if (Guid.TryParse(userIdString, out var userId))
+        if (Guid.TryParse(userIdString, out var userAccountId))
         {
-            var tempFi = new FileInfo(Path.Combine(Path.GetTempPath(), model.TempId.ToString()));
-            if (!tempFi.Exists)
-                throw new FileException("file not found");
+            var path = _attachService.GetPath(model);
+            await _userAccountService.AddAvatarToUser(userAccountId, model, path);
+        }
+        else
+            throw new UserException("You are not authorized");
+    }
 
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "Attaches", model.TempId.ToString());
-            var destFi = new FileInfo(path);
-            if (destFi.Directory != null && !destFi.Directory.Exists)
-                destFi.Directory.Create();
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task CreatePost([FromBody] CreatePostModel createPost)
+    {
+        var userIdString = User.Claims.FirstOrDefault(x => x.Type == "userAccountId")?.Value;
+        if (Guid.TryParse(userIdString, out var userAccountId))
+        {
+            await _userAccountService.CreatePost(createPost, userAccountId);
+        }
+        else
+            throw new UserException("You are not authorized");
+    }
 
-            System.IO.File.Copy(tempFi.FullName, path, true);
-
-            await _userAccountService.AddAvatarToUser(userId, model, path);
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task CreateComment([FromBody] CreateCommentModel createComment)
+    {
+        var userIdString = User.Claims.FirstOrDefault(x => x.Type == "userAccountId")?.Value;
+        if (Guid.TryParse(userIdString, out var userAccountId))
+        {
+            await _userAccountService.CreateComment(createComment, userAccountId);
         }
         else
             throw new UserException("You are not authorized");
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<FileResult> GetUserAvatar(Guid userAccountId)
@@ -54,8 +77,19 @@ public class UserAccountController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetPostModel))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<GetPostModel> GetPost(Guid postId)
+    {
+        var post = await _userAccountService.GetPost(postId);
+
+        return post;
+    }
+
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [AllowAnonymous]
     public async Task<FileResult> DownloadAvatar(Guid userAccountId)
     {
         var attach = await _userAccountService.GetUserAvatar(userAccountId);
@@ -67,5 +101,13 @@ public class UserAccountController : ControllerBase
         };
 
         return result;
+    }
+
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CommentModel>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IEnumerable<CommentModel>> GetAllComments(Guid postId)
+    {
+        return await _userAccountService.GetAllComments(postId);
     }
 }

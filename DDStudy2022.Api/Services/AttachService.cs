@@ -42,4 +42,19 @@ public class AttachService : IAttachService
 
         return meta;
     }
+
+    public string GetPath(MetadataModel model)
+    {
+        var tempFi = new FileInfo(Path.Combine(Path.GetTempPath(), model.TempId.ToString()));
+        if (!tempFi.Exists)
+            throw new FileException("file not found");
+
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "Attaches", model.TempId.ToString());
+        var destFi = new FileInfo(path);
+        if (destFi.Directory != null && !destFi.Directory.Exists)
+            destFi.Directory.Create();
+
+        File.Copy(tempFi.FullName, path, true);
+        return path;
+    }
 }

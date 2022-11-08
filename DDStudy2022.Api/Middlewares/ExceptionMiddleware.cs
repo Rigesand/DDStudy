@@ -36,6 +36,11 @@ namespace DDStudy2022.Api.Middlewares
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {exception.Message});
                 }
+                catch (PostException exception)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new {exception.Message});
+                }
                 catch (Exception)
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
