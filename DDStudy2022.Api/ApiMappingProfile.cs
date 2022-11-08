@@ -12,9 +12,11 @@ public class ApiMappingProfile : Profile
     {
         CreateMap<CreateUserModel, User>()
             .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()))
-            .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashService.GetHash(s.Password!)))
-            .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime));
-        CreateMap<User, UserModel>();
+            .ForMember(d => d.PasswordHash, m => m.MapFrom(s => HashService.GetHash(s.Password)))
+            .ForMember(d => d.BirthDate, m => m.MapFrom(s => s.BirthDate.UtcDateTime))
+            .ForMember(d => d.UserAccountId, m => m.MapFrom(s => Guid.NewGuid()));
+        CreateMap<User, UserModel>()
+            .ForMember(d=>d.AccountId,m=>m.MapFrom(it=>it.UserAccountId));
         CreateMap<Avatar, AttachModel>();
     }
 }

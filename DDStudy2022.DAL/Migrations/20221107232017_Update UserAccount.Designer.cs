@@ -3,6 +3,7 @@ using System;
 using DDStudy2022.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDStudy2022.DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221107232017_Update UserAccount")]
+    partial class UpdateUserAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,7 +309,8 @@ namespace DDStudy2022.DAL.Migrations
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.UserAccount", b =>
                 {
-                    b.Navigation("Avatar");
+                    b.Navigation("Avatar")
+                        .IsRequired();
 
                     b.Navigation("Comments");
 

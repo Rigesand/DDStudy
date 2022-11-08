@@ -53,6 +53,7 @@ builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAttachService, AttachService>();
+builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 
 //Регистрация валидаторов
 builder.Services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();

@@ -15,7 +15,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserModel>
             .MaximumLength(20)
             .NotEmpty();
         RuleFor(x => x)
-            .Must(user => !userService.CheckUserExistsByMail(user.Email!).Result)
+            .Must(user => !userService.CheckUserExistsByMail(user.Email).Result)
             .WithMessage("Email: Пользователь с таким email уже существует");
     }
 }

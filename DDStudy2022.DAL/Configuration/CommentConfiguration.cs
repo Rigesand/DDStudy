@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DDStudy2022.DAL.Configuration;
 
-public class AttachConfiguration : IEntityTypeConfiguration<Attach>
+public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 {
-    public void Configure(EntityTypeBuilder<Attach> builder)
+    public void Configure(EntityTypeBuilder<Comment> builder)
     {
-        builder.ToTable("Attaches");
+        builder.ToTable("Comments");
 
         builder.HasKey(it => it.Id);
     }

@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> Login([FromBody] TokenRequestModel model)
     {
-        return await _authService.Login(model.Login!, model.Password!);
+        return await _authService.Login(model.Login, model.Password);
     }
 
     [HttpPost]
@@ -41,6 +41,6 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> RefreshToken([FromBody] RefreshTokenRequestModel model)
     {
-        return await _authService.GetTokenByRefreshToken(model.RefreshToken!);
+        return await _authService.GetTokenByRefreshToken(model.RefreshToken);
     }
 }

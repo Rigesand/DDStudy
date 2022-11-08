@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using DDStudy2022.Api.Interfaces;
-using DDStudy2022.Api.Models.Attaches;
 using DDStudy2022.Api.Models.Users;
 using DDStudy2022.Common.Exceptions;
 using DDStudy2022.DAL;
@@ -23,12 +22,11 @@ public class UserService : IUserService
 
     private async Task<User> GetUserById(Guid id)
     {
-        var user = await _context.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == id);
+        var user = await _context.Users.Include(it=>it.UserAccount).FirstOrDefaultAsync(x => x.Id == id);
         if (user == null)
             throw new UserException("User not found");
         return user;
     }
-
 
     public async Task DeleteUser(Guid id)
     {
@@ -39,7 +37,7 @@ public class UserService : IUserService
 
     public async Task<bool> CheckUserExistsByMail(string email)
     {
-        var isExist = await _context.Users.AnyAsync(it => it.Email!.ToLower() == email.ToLower());
+        var isExist = await _context.Users.AnyAsync(it => it.Email.ToLower() == email.ToLower());
         return isExist;
     }
 
@@ -66,34 +64,5 @@ public class UserService : IUserService
         }
 
         return session;
-    }
-
-    public async Task AddAvatarToUser(Guid userId, MetadataModel meta, string filePath)
-    {
-        var user = await _context.Users.Include(x => x.Avatar)
-            .FirstOrDefaultAsync(x => x.Id == userId);
-        if (user == null)
-        {
-            throw new UserException("User not found");
-        }
-
-        var avatar = new Avatar
-        {
-            Author = user,
-            MimeType = meta.MimeType,
-            FilePath = filePath,
-            Name = meta.Name,
-            Size = meta.Size
-        };
-        user.Avatar = avatar;
-
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<AttachModel> GetUserAvatar(Guid userId)
-    {
-        var user = await GetUserById(userId);
-        var atach = _mapper.Map<AttachModel>(user.Avatar);
-        return atach;
     }
 }

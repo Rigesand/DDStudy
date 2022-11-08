@@ -30,10 +30,10 @@ public class AuthService : IAuthService
 
     private async Task<User> GetUserByCredential(string login, string password)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(it => it.Email!.ToLower() == login.ToLower());
+        var user = await _context.Users.FirstOrDefaultAsync(it => it.Email.ToLower() == login.ToLower());
         if (user == null)
             throw new UserException("User not found");
-        if (!HashService.Verify(password, user.PasswordHash!))
+        if (!HashService.Verify(password, user.PasswordHash))
             throw new UserException("Password is incorrect");
         return user;
     }
@@ -49,9 +49,10 @@ public class AuthService : IAuthService
             notBefore: dtNow,
             claims: new[]
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, session.User.Name!),
+                new Claim(ClaimsIdentity.DefaultNameClaimType, session.User.Name),
                 new Claim("sessionId", session.Id.ToString()),
-                new Claim("id", session.User.Id.ToString())
+                new Claim("id", session.User.Id.ToString()),
+                new Claim("userAccountId", session.User.UserAccountId.ToString())
             },
             expires: DateTime.Now.AddMinutes(_config.LifeTime),
             signingCredentials: new SigningCredentials(_config.SymmetricSecurityKey(),
@@ -110,6 +111,12 @@ public class AuthService : IAuthService
     public async Task Registration(CreateUserModel model)
     {
         var dbUser = _mapper.Map<User>(model);
+        var account = new UserAccount
+        {
+            Id = dbUser.UserAccountId,
+            UserId = dbUser.Id
+        };
+        dbUser.UserAccount = account;
         await _context.Users.AddAsync(dbUser);
         await _context.SaveChangesAsync();
     }

@@ -3,9 +3,9 @@
 public class Attach
 {
     public Guid Id { get; set; }
-    public string? Name { get; set; }
-    public string? MimeType { get; set; }
-    public string? FilePath { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
     public long Size { get; set; }
-    public User? Author { get; set; }
+    public UserAccount UserAccount { get; set; } = null!;
 }
