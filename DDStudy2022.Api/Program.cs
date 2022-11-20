@@ -1,6 +1,7 @@
-using DDStudy2022.Api;
+using AspNetCoreRateLimit;
 using DDStudy2022.Api.Configs;
 using DDStudy2022.Api.Interfaces;
+using DDStudy2022.Api.Mapper;
 using DDStudy2022.Api.Middlewares;
 using DDStudy2022.Api.Middlewares.Extensions;
 using DDStudy2022.Api.Models.Users;
@@ -16,6 +17,15 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var authSection = builder.Configuration.GetSection(AuthConfig.Position);
 var authConfig = authSection.Get<AuthConfig>();
+
+
+builder.Services.AddOptions();
+builder.Services.AddMemoryCache();
+builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
+builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -46,6 +56,8 @@ builder.Services.AddSwaggerGen(c =>
             new List<string>()
         }
     });
+    c.SwaggerDoc("Auth", new OpenApiInfo {Title = "Auth"});
+    c.SwaggerDoc("Api", new OpenApiInfo {Title = "Api"});
 });
 
 //Регистрация сервисов
@@ -53,16 +65,20 @@ builder.Services.Configure<AuthConfig>(authSection);
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAttachService, AttachService>();
-builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<LinkGeneratorService>();
+//builder.Services.AddSingleton<DdosGuard>();
+
 
 //Регистрация валидаторов
 builder.Services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();
+
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgresql"));
 });
-builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<ApiMappingProfile>(); });
+builder.Services.AddAutoMapper(typeof(ApiMappingProfile).Assembly);
 builder.Services
     .AddAuthentication(options => { options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme; })
     .AddJwtBearer(options =>
@@ -103,10 +119,15 @@ using (var serviceScope = ((IApplicationBuilder) app).ApplicationServices
 
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("Api/swagger.json", "Api");
+    c.SwaggerEndpoint("Auth/swagger.json", "Auth");
+});
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseClientRateLimiting();
 app.UseAuthorization();
 app.UseTokenValidator();
 app.UseValidationException();

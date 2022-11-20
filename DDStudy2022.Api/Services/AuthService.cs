@@ -5,6 +5,7 @@ using DDStudy2022.Api.Configs;
 using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models.Tokens;
 using DDStudy2022.Api.Models.Users;
+using DDStudy2022.Common.Consts;
 using DDStudy2022.Common.Exceptions;
 using DDStudy2022.Common.Services;
 using DDStudy2022.DAL;
@@ -50,9 +51,8 @@ public class AuthService : IAuthService
             claims: new[]
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, session.User.Name),
-                new Claim("sessionId", session.Id.ToString()),
-                new Claim("id", session.User.Id.ToString()),
-                new Claim("userAccountId", session.User.UserAccountId.ToString())
+                new Claim(ClaimNames.SessionId, session.Id.ToString()),
+                new Claim(ClaimNames.Id, session.User.Id.ToString())
             },
             expires: DateTime.Now.AddMinutes(_config.LifeTime),
             signingCredentials: new SigningCredentials(_config.SymmetricSecurityKey(),
@@ -64,7 +64,7 @@ public class AuthService : IAuthService
             notBefore: dtNow,
             claims: new[]
             {
-                new Claim("refreshToken", session.RefreshToken.ToString())
+                new Claim(ClaimNames.RefreshToken, session.RefreshToken.ToString())
             },
             expires: DateTime.Now.AddHours(_config.LifeTime),
             signingCredentials: new SigningCredentials(_config.SymmetricSecurityKey(),
@@ -93,6 +93,17 @@ public class AuthService : IAuthService
         return session;
     }
 
+    public async Task<UserSession> GetSessionById(Guid id)
+    {
+        var session = await _context.Sessions.FirstOrDefaultAsync(x => x.Id == id);
+        if (session == null)
+        {
+            throw new UserSessionException("session is not found");
+        }
+
+        return session;
+    }
+
     public async Task<TokenModel> Login(string login, string password)
     {
         var user = await GetUserByCredential(login, password);
@@ -111,12 +122,6 @@ public class AuthService : IAuthService
     public async Task Registration(CreateUserModel model)
     {
         var dbUser = _mapper.Map<User>(model);
-        var account = new UserAccount
-        {
-            Id = dbUser.UserAccountId,
-            UserId = dbUser.Id
-        };
-        dbUser.UserAccount = account;
         await _context.Users.AddAsync(dbUser);
         await _context.SaveChangesAsync();
     }

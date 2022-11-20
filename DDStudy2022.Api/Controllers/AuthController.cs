@@ -8,6 +8,7 @@ namespace DDStudy2022.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
+[ApiExplorerSettings(GroupName = "Auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -23,9 +24,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenModel))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> Login([FromBody] TokenRequestModel model)
-    {
-        return await _authService.Login(model.Login, model.Password);
-    }
+        => await _authService.Login(model.Login, model.Password);
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,7 +39,5 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TokenModel))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<TokenModel> RefreshToken([FromBody] RefreshTokenRequestModel model)
-    {
-        return await _authService.GetTokenByRefreshToken(model.RefreshToken);
-    }
+        => await _authService.GetTokenByRefreshToken(model.RefreshToken);
 }

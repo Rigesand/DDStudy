@@ -1,4 +1,6 @@
 ﻿using DDStudy2022.Api.Interfaces;
+using DDStudy2022.Common.Consts;
+using DDStudy2022.Common.Exstensions;
 
 namespace DDStudy2022.Api.Middlewares;
 
@@ -11,13 +13,13 @@ public class TokenValidatorMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IUserService userService)
+    public async Task InvokeAsync(HttpContext context, IAuthService authService)
     {
         var isOk = true;
-        var sessionIdString = context.User.Claims.FirstOrDefault(x => x.Type == "sessionId")?.Value;
-        if (Guid.TryParse(sessionIdString, out var sessionId))
+        var sessionId = context.User.GetClaimValue<Guid>(ClaimNames.SessionId);
+        if (sessionId != default)
         {
-            var session = await userService.GetSessionById(sessionId);
+            var session = await authService.GetSessionById(sessionId);
             if (!session.IsActive)
             {
                 isOk = false;

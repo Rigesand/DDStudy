@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using DDStudy2022.Api.Interfaces;
+using DDStudy2022.Api.Models.Attaches;
 using DDStudy2022.Api.Models.Users;
 using DDStudy2022.Common.Exceptions;
 using DDStudy2022.DAL;
@@ -20,49 +20,55 @@ public class UserService : IUserService
         _context = context;
     }
 
+    public async Task<bool> CheckUserExist(string email)
+    {
+        return await _context.Users.AnyAsync(x => x.Email.ToLower() == email.ToLower());
+    }
+
+    public async Task AddAvatarToUser(Guid userId, MetadataModel meta, string filePath)
+    {
+        var user = await _context.Users.Include(x => x.Avatar).FirstOrDefaultAsync(x => x.Id == userId);
+        if (user != null)
+        {
+            var avatar = new Avatar
+            {
+                Author = user,
+                MimeType = meta.MimeType,
+                FilePath = filePath,
+                Name = meta.Name,
+                Size = meta.Size
+            };
+            user.Avatar = avatar;
+
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<AttachModel> GetUserAvatar(Guid userId)
+    {
+        var user = await GetUserById(userId);
+        var atach = _mapper.Map<AttachModel>(user.Avatar);
+        return atach;
+    }
+
+    public async Task<IEnumerable<UserAvatarModel>> GetUsers() =>
+        await _context.Users.AsNoTracking()
+            .Include(x => x.Avatar)
+            .Include(x => x.Posts)
+            .Select(x => _mapper.Map<UserAvatarModel>(x))
+            .ToListAsync();
+
+
+    public async Task<UserAvatarModel> GetUser(Guid id) =>
+        _mapper.Map<User, UserAvatarModel>(await GetUserById(id));
+
+
     private async Task<User> GetUserById(Guid id)
     {
-        var user = await _context.Users.Include(it=>it.UserAccount).FirstOrDefaultAsync(x => x.Id == id);
-        if (user == null)
-            throw new UserException("User not found");
+        var user = await _context.Users.Include(x => x.Avatar).Include(x => x.Posts)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (user == null || user == default)
+            throw new UserException("Not found");
         return user;
-    }
-
-    public async Task DeleteUser(Guid id)
-    {
-        var dbUser = await GetUserById(id);
-        _context.Users.Remove(dbUser);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<bool> CheckUserExistsByMail(string email)
-    {
-        var isExist = await _context.Users.AnyAsync(it => it.Email.ToLower() == email.ToLower());
-        return isExist;
-    }
-
-    public async Task<UserModel> GetUser(Guid id)
-    {
-        var user = await GetUserById(id);
-        return _mapper.Map<UserModel>(user);
-    }
-
-    public async Task<IEnumerable<UserModel>> GetAllUsers()
-    {
-        return await _context.Users.AsNoTracking()
-            .ProjectTo<UserModel>(_mapper.ConfigurationProvider)
-            .ToListAsync();
-    }
-
-
-    public async Task<UserSession> GetSessionById(Guid id)
-    {
-        var session = await _context.Sessions.FirstOrDefaultAsync(x => x.Id == id);
-        if (session == null)
-        {
-            throw new UserSessionException("Session is not found");
-        }
-
-        return session;
     }
 }

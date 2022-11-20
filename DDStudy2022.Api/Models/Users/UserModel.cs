@@ -3,8 +3,8 @@
 public class UserModel
 {
     public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
     public DateTimeOffset BirthDate { get; set; }
-    public Guid AccountId { get; set; }
+    public int PostsCount { get; set; }
 }
