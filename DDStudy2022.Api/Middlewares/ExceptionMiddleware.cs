@@ -1,5 +1,4 @@
 ﻿using DDStudy2022.Common.Exceptions;
-using FluentValidation;
 
 namespace DDStudy2022.Api.Middlewares
 {
@@ -12,14 +11,6 @@ namespace DDStudy2022.Api.Middlewares
                 try
                 {
                     await next(context);
-                }
-                catch (ValidationException exception)
-                {
-                    var errors = exception.Errors.Select(x => $"{x.ErrorMessage}");
-                    var errorMessage = string.Join(Environment.NewLine, errors);
-
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsJsonAsync(new {Message = errorMessage});
                 }
                 catch (UserException exception)
                 {
@@ -41,11 +32,11 @@ namespace DDStudy2022.Api.Middlewares
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {exception.Message});
                 }
-                catch (Exception)
+                /*catch (Exception)
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {Message = "Внутренняя ошибка сервера"});
-                }
+                }*/
             });
         }
     }

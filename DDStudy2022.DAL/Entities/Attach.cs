@@ -3,9 +3,11 @@
 public class Attach
 {
     public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string MimeType { get; set; } = string.Empty;
-    public string FilePath { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
+    public string MimeType { get; set; } = null!;
+    public string FilePath { get; set; } = null!;
     public long Size { get; set; }
-    public UserAccount UserAccount { get; set; } = null!;
+
+    public Guid AuthorId { get; set; }
+    public User Author { get; set; } = null!;
 }

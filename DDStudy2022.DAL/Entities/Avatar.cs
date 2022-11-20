@@ -2,5 +2,6 @@
 
 public class Avatar : Attach
 {
-    public Guid UserAccountId { get; set; }
+    public User Owner { get; set; } = null!;
+    public Guid OwnerId { get; set; }
 }

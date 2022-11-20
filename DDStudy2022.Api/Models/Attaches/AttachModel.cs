@@ -2,7 +2,8 @@
 
 public class AttachModel
 {
-    public string Name { get; set; } = string.Empty;
-    public string MimeType { get; set; } = string.Empty;
-    public string FilePath { get; set; } = string.Empty;
+    public Guid Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string MimeType { get; set; } = null!;
+    public string FilePath { get; set; } = null!;
 }
