@@ -18,22 +18,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPut]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task UpdateUser([FromBody] UpdateUser user)
-    {
-        await _userService.UpdateUser(user);
-    }
-
-    [HttpDelete]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task DeleteUser(Guid id)
-    {
-        await _userService.DeleteUser(id);
-    }
-
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserModel>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -54,5 +38,13 @@ public class UserController : ControllerBase
         }
 
         throw new UserException("You are not authorized");
+    }
+
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task DeleteUser(Guid id)
+    {
+        await _userService.DeleteUser(id);
     }
 }

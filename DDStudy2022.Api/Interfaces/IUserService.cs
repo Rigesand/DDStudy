@@ -5,7 +5,6 @@ namespace DDStudy2022.Api.Interfaces;
 
 public interface IUserService
 {
-    public Task UpdateUser(UpdateUser user);
     public Task DeleteUser(Guid id);
     public Task<bool> CheckUserExistsByMail(string email);
     public Task<UserModel> GetUser(Guid id);
