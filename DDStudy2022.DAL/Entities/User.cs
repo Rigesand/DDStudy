@@ -11,5 +11,7 @@ public class User
     public Avatar? Avatar { get; set; }
     public ICollection<UserSession>? Sessions { get; set; }
     public ICollection<Post>? Posts { get; set; }
-    public ICollection<Comment> Comments { get; set; } = null!;
+    public ICollection<Comment>? Comments { get; set; }
+
+    public ICollection<Subscription>? Subscriptions { get; set; }
 }

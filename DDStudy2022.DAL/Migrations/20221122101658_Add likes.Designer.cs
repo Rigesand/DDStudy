@@ -3,6 +3,7 @@ using System;
 using DDStudy2022.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDStudy2022.DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221122101658_Add likes")]
+    partial class Addlikes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,6 +89,10 @@ namespace DDStudy2022.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -95,6 +101,8 @@ namespace DDStudy2022.DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Likes");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Like");
                 });
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.Post", b =>
@@ -117,27 +125,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("DDStudy2022.DAL.Entities.Subscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SubUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubUserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.User", b =>
@@ -213,7 +200,7 @@ namespace DDStudy2022.DAL.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.ToTable("CommentLike", (string)null);
+                    b.HasDiscriminator().HasValue("CommentLike");
                 });
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.PostContent", b =>
@@ -237,7 +224,7 @@ namespace DDStudy2022.DAL.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostLikes", (string)null);
+                    b.HasDiscriminator().HasValue("PostLike");
                 });
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.Attach", b =>
@@ -292,25 +279,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("DDStudy2022.DAL.Entities.Subscription", b =>
-                {
-                    b.HasOne("DDStudy2022.DAL.Entities.User", "SubUser")
-                        .WithMany()
-                        .HasForeignKey("SubUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DDStudy2022.DAL.Entities.User", "User")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("SubUser");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DDStudy2022.DAL.Entities.UserSession", b =>
                 {
                     b.HasOne("DDStudy2022.DAL.Entities.User", "User")
@@ -347,12 +315,6 @@ namespace DDStudy2022.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DDStudy2022.DAL.Entities.Like", null)
-                        .WithOne()
-                        .HasForeignKey("DDStudy2022.DAL.Entities.CommentLike", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Comment");
                 });
 
@@ -375,12 +337,6 @@ namespace DDStudy2022.DAL.Migrations
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.PostLike", b =>
                 {
-                    b.HasOne("DDStudy2022.DAL.Entities.Like", null)
-                        .WithOne()
-                        .HasForeignKey("DDStudy2022.DAL.Entities.PostLike", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DDStudy2022.DAL.Entities.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
@@ -413,8 +369,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Sessions");
-
-                    b.Navigation("Subscriptions");
                 });
 #pragma warning restore 612, 618
         }

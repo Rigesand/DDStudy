@@ -5,9 +5,7 @@ namespace DDStudy2022.Api.Services;
 
 public class DdosGuard
 {
-    public ConcurrentDictionary<string, int> RequestControlDict { get; set; } = new ConcurrentDictionary<string, int>();
-
-    private object _lock = new object();
+    public ConcurrentDictionary<string, int> RequestControlDict { get; set; } = new();
 
     public void CheckRequest(string? token)
     {

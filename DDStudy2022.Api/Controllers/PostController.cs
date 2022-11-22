@@ -1,5 +1,6 @@
 ﻿using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models.Comments;
+using DDStudy2022.Api.Models.Likes;
 using DDStudy2022.Api.Models.Posts;
 using DDStudy2022.Api.Services;
 using DDStudy2022.Common.Consts;
@@ -15,10 +16,18 @@ namespace DDStudy2022.Api.Controllers;
 public class PostController : ControllerBase
 {
     private readonly IPostService _postService;
+    private readonly ILikeService _likeService;
+    private readonly ICommentService _commentService;
 
-    public PostController(IPostService postService, LinkGeneratorService links)
+    public PostController(
+        IPostService postService,
+        LinkGeneratorService links,
+        ICommentService commentService,
+        ILikeService likeService)
     {
         _postService = postService;
+        _commentService = commentService;
+        _likeService = likeService;
         links.LinkContentGenerator = x => Url.ControllerAction<AttachController>(
             nameof(AttachController.GetPostContent), new
             {
@@ -32,14 +41,20 @@ public class PostController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<List<PostModel>> GetPosts(int skip = 0, int take = 10)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PostModel>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IEnumerable<PostModel>> GetPosts(int skip = 0, int take = 10)
         => await _postService.GetPosts(skip, take);
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PostModel))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<PostModel> GetPostById(Guid id)
         => await _postService.GetPostById(id);
 
-    [HttpPost]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreatePost(CreatePostRequest request)
     {
         if (!request.AuthorId.HasValue)
@@ -58,20 +73,68 @@ public class PostController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreateComment([FromBody] CreateCommentModel createComment)
     {
-        var userAccountId = User.GetClaimValue<Guid>(ClaimNames.Id);
-        if (userAccountId != default)
+        var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+        if (userId != default)
         {
-            await _postService.CreateComment(createComment, userAccountId);
+            await _commentService.CreateComment(createComment, userId);
         }
         else
             throw new UserException("You are not authorized");
     }
 
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CommentModel>))]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IEnumerable<CommentModel>> GetAllComments(Guid postId)
+    public async Task ChangeLikeFromPost([FromBody] PostLikeRequest likeRequest)
     {
-        return await _postService.GetAllComments(postId);
+        if (!likeRequest.UserId.HasValue)
+        {
+            var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+            if (userId == default)
+                throw new UserException("not authorize");
+            likeRequest.UserId = userId;
+        }
+
+        await _likeService.ChangeLikeFromPost(likeRequest);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task ChangeLikeFromComment([FromBody] CommentLikeRequest likeRequest)
+    {
+        if (!likeRequest.UserId.HasValue)
+        {
+            var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+            if (userId == default)
+                throw new UserException("not authorize");
+            likeRequest.UserId = userId;
+        }
+
+        await _likeService.ChangeLikeFromComment(likeRequest);
+    }
+
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task DeleteComment(Guid id)
+    {
+        var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+        if (userId == default)
+            throw new UserException("not authorize");
+
+        await _commentService.DeleteComment(id, userId);
+    }
+
+    [HttpDelete]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task DeletePost(Guid id)
+    {
+        var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+        if (userId == default)
+            throw new UserException("not authorize");
+
+        await _postService.DeletePost(id, userId);
     }
 }

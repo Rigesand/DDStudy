@@ -9,5 +9,6 @@ public class Post
     public DateTimeOffset Created { get; set; }
 
     public ICollection<PostContent>? PostContents { get; set; }
-    public ICollection<Comment>? Comments { get; set; } = new List<Comment>();
+    public ICollection<Comment>? Comments { get; set; }
+    public ICollection<PostLike>? Likes { get; set; }
 }

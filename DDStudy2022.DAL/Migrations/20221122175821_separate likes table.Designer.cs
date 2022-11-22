@@ -3,6 +3,7 @@ using System;
 using DDStudy2022.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDStudy2022.DAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221122175821_separate likes table")]
+    partial class separatelikestable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,27 +119,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("DDStudy2022.DAL.Entities.Subscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SubUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubUserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("DDStudy2022.DAL.Entities.User", b =>
@@ -292,25 +273,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("DDStudy2022.DAL.Entities.Subscription", b =>
-                {
-                    b.HasOne("DDStudy2022.DAL.Entities.User", "SubUser")
-                        .WithMany()
-                        .HasForeignKey("SubUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DDStudy2022.DAL.Entities.User", "User")
-                        .WithMany("Subscriptions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("SubUser");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DDStudy2022.DAL.Entities.UserSession", b =>
                 {
                     b.HasOne("DDStudy2022.DAL.Entities.User", "User")
@@ -413,8 +375,6 @@ namespace DDStudy2022.DAL.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Sessions");
-
-                    b.Navigation("Subscriptions");
                 });
 #pragma warning restore 612, 618
         }

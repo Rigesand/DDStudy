@@ -35,20 +35,6 @@ public class AttachController : ControllerBase
         return File(fs, attach.MimeType);
     }
 
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MetadataModel))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<List<MetadataModel>> UploadFiles([FromForm] List<IFormFile> files)
-    {
-        var res = new List<MetadataModel>();
-        foreach (var file in files)
-        {
-            res.Add(await _attachService.UploadFile(file));
-        }
-
-        return res;
-    }
-
     [HttpGet]
     [Route("{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileStreamResult))]
@@ -69,4 +55,18 @@ public class AttachController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<FileStreamResult> GetPostContent(Guid postContentId, bool download = false)
         => RenderAttach(await _postService.GetPostContent(postContentId), download);
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MetadataModel))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<List<MetadataModel>> UploadFiles([FromForm] List<IFormFile> files)
+    {
+        var res = new List<MetadataModel>();
+        foreach (var file in files)
+        {
+            res.Add(await _attachService.UploadFile(file));
+        }
+
+        return res;
+    }
 }

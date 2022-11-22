@@ -29,20 +29,9 @@ public class UserController : ControllerBase
             });
     }
 
-    [HttpPost]
-    public async Task AddAvatarToUser(MetadataModel model)
-    {
-        var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
-        if (userId != default)
-        {
-            var path = _attachService.GetPath(model);
-            await _userService.AddAvatarToUser(userId, model, path);
-        }
-        else
-            throw new UserException("you are not authorized");
-    }
-
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserAvatarModel>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IEnumerable<UserAvatarModel>> GetUsers() => await _userService.GetUsers();
 
     [HttpGet]
@@ -58,8 +47,25 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserAvatarModel))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<UserAvatarModel> GetUserById(Guid userId)
     {
         return await _userService.GetUser(userId);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task AddAvatarToUser(MetadataModel model)
+    {
+        var userId = User.GetClaimValue<Guid>(ClaimNames.Id);
+        if (userId != default)
+        {
+            var path = _attachService.GetPath(model);
+            await _userService.AddAvatarToUser(userId, model, path);
+        }
+        else
+            throw new UserException("you are not authorized");
     }
 }

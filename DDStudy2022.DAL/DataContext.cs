@@ -22,4 +22,8 @@ public class DataContext : DbContext
     public DbSet<Avatar> Avatars => Set<Avatar>();
     public DbSet<PostContent> PostContents => Set<PostContent>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Like> Likes => Set<Like>();
+    public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
+    public DbSet<PostLike> PostLikes => Set<PostLike>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
 }

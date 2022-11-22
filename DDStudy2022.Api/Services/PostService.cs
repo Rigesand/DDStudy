@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using DDStudy2022.Api.Interfaces;
 using DDStudy2022.Api.Models.Attaches;
-using DDStudy2022.Api.Models.Comments;
 using DDStudy2022.Api.Models.Posts;
 using DDStudy2022.Common.Exceptions;
 using DDStudy2022.DAL;
@@ -50,11 +48,13 @@ public class PostService : IPostService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<PostModel>> GetPosts(int skip, int take)
+    public async Task<IEnumerable<PostModel>> GetPosts(int skip, int take)
     {
         var posts = await _context.Posts
             .Include(x => x.Author).ThenInclude(x => x.Avatar)
             .Include(x => x.PostContents).AsNoTracking().OrderByDescending(x => x.Created).Skip(skip).Take(take)
+            .Include(x => x.Comments)
+            .Include(x => x.Likes)
             .Select(x => _mapper.Map<PostModel>(x))
             .ToListAsync();
 
@@ -66,6 +66,8 @@ public class PostService : IPostService
         var post = await _context.Posts
             .Include(x => x.Author).ThenInclude(x => x.Avatar)
             .Include(x => x.PostContents).AsNoTracking()
+            .Include(x => x.Comments)
+            .Include(x => x.Likes)
             .Where(x => x.Id == id)
             .Select(x => _mapper.Map<PostModel>(x))
             .FirstOrDefaultAsync();
@@ -82,27 +84,15 @@ public class PostService : IPostService
         return _mapper.Map<AttachModel>(res);
     }
 
-    public async Task CreateComment(CreateCommentModel newComment, Guid userId)
+    public async Task DeletePost(Guid id, Guid userId)
     {
-        var post = await _context.Posts.Include(it => it.Comments)
-            .FirstOrDefaultAsync(it => it.Id == newComment.PostId);
-
+        var post = await _context.Posts.FirstOrDefaultAsync(it => it.Id == id && it.AuthorId == userId);
         if (post == null)
         {
-            throw new PostException("Post not found");
+            throw new PostException("Not found");
         }
 
-        var comment = _mapper.Map<Comment>(newComment);
-        comment.UserId = userId;
-        post.Comments!.Add(comment);
-
+        _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
-    }
-
-    public async Task<IEnumerable<CommentModel>> GetAllComments(Guid postId)
-    {
-        return await _context.Comments.AsNoTracking().Where(it => it.PostId == postId)
-            .ProjectTo<CommentModel>(_mapper.ConfigurationProvider)
-            .ToListAsync();
     }
 }

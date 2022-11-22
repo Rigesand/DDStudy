@@ -22,6 +22,14 @@ namespace DDStudy2022.Api.Middlewares
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {exception.Message});
                 }
+                catch (FluentValidation.ValidationException exception)
+                {
+                    var errors = exception.Errors.Select(x => $"{x.ErrorMessage}");
+                    var errorMessage = string.Join(Environment.NewLine, errors);
+
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new {Message = errorMessage});
+                }
                 catch (FileException exception)
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -32,11 +40,16 @@ namespace DDStudy2022.Api.Middlewares
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new {exception.Message});
                 }
-                /*catch (Exception)
+                catch (SubscriptionException exception)
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsJsonAsync(new {Message = "Внутренняя ошибка сервера"});
-                }*/
+                    await context.Response.WriteAsJsonAsync(new {exception.Message});
+                }
+                catch (CommentException exception)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsJsonAsync(new {exception.Message});
+                }
             });
         }
     }
