@@ -5,12 +5,14 @@ using DDStudy2022.Api.Services;
 using DDStudy2022.Common.Consts;
 using DDStudy2022.Common.Exceptions;
 using DDStudy2022.Common.Exstensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDStudy2022.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
+[Authorize]
 [ApiExplorerSettings(GroupName = "Api")]
 public class UserController : ControllerBase
 {

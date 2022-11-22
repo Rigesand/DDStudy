@@ -56,6 +56,9 @@ public class ApiMappingProfile : Profile
         CreateMap<SubscriptionRequest, Subscription>()
             .ForMember(d => d.Id, m => m.MapFrom(s => Guid.NewGuid()));
 
-        CreateMap<SubscriptionModel, Subscription>().ReverseMap();
+        CreateMap<SubscriptionModel, Subscription>()
+            .ForMember(d => d.User, m => m.MapFrom(s => s.User))
+            .ForMember(d => d.SubUser, m => m.MapFrom(s => s.SubUser))
+            .ReverseMap();
     }
 }

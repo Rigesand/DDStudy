@@ -54,20 +54,10 @@ public class SubscriptionService : ISubscriptionService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<SubscriptionModel>> GetSubscription(Guid userId)
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscription(Guid subUserId)
     {
         var subscriptions = await _context.Subscriptions
-            .Where(it => it.UserId == userId)
-            .Select(x => _mapper.Map<SubscriptionModel>(x))
-            .ToListAsync();
-        if (subscriptions == null)
-            throw new SubscriptionException("Subscription not Found");
-
-        return subscriptions;
-    }
-    public async Task<IEnumerable<SubscriptionModel>> GetSubscribers(Guid subUserId)
-    {
-        var subscriptions = await _context.Subscriptions
+            .Include(x => x.User).ThenInclude(x => x.Avatar)
             .Where(it => it.SubUserId == subUserId)
             .Select(x => _mapper.Map<SubscriptionModel>(x))
             .ToListAsync();
@@ -75,5 +65,18 @@ public class SubscriptionService : ISubscriptionService
             throw new SubscriptionException("Subscription not Found");
 
         return subscriptions;
+    }
+
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscribers(Guid userId)
+    {
+        var subscribers = await _context.Subscriptions
+            .Include(x => x.SubUser).ThenInclude(x => x.Avatar)
+            .Where(it => it.UserId == userId)
+            .Select(x => _mapper.Map<SubscriptionModel>(x))
+            .ToListAsync();
+        if (subscribers == null)
+            throw new SubscriptionException("Subscription not Found");
+
+        return subscribers;
     }
 }
