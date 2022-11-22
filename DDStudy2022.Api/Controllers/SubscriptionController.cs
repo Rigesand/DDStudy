@@ -46,4 +46,16 @@ public class SubscriptionController : ControllerBase
         else
             throw new UserException("you are not authorized");
     }
+
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubscriptionModel>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscription(Guid userId)
+        => await _subscriptionService.GetSubscription(userId);
+
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<SubscriptionModel>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscribers(Guid subUserId)
+        => await _subscriptionService.GetSubscribers(subUserId);
 }

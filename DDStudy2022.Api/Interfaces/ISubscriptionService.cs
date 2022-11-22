@@ -6,4 +6,6 @@ public interface ISubscriptionService
 {
     public Task Subscribe(SubscriptionRequest newSubscription, Guid userId);
     public Task UnSubscribe(SubscriptionRequest newSubscription, Guid userId);
+    public Task<IEnumerable<SubscriptionModel>> GetSubscription(Guid userId);
+    public Task<IEnumerable<SubscriptionModel>> GetSubscribers(Guid userId);
 }

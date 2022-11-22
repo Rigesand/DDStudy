@@ -14,4 +14,5 @@ public class User
     public ICollection<Comment>? Comments { get; set; }
 
     public ICollection<Subscription>? Subscriptions { get; set; }
+    public ICollection<Subscription>? Subscribers { get; set; }
 }

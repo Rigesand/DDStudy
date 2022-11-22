@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DDStudy2022.Api.Services;
 
-public class SubscriptionService: ISubscriptionService
+public class SubscriptionService : ISubscriptionService
 {
     private readonly IMapper _mapper;
     private readonly DataContext _context;
@@ -49,8 +49,31 @@ public class SubscriptionService: ISubscriptionService
         {
             throw new SubscriptionException("You have already unsubscribed");
         }
-        
+
         _context.Subscriptions.Remove(sub);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscription(Guid userId)
+    {
+        var subscriptions = await _context.Subscriptions
+            .Where(it => it.UserId == userId)
+            .Select(x => _mapper.Map<SubscriptionModel>(x))
+            .ToListAsync();
+        if (subscriptions == null)
+            throw new SubscriptionException("Subscription not Found");
+
+        return subscriptions;
+    }
+    public async Task<IEnumerable<SubscriptionModel>> GetSubscribers(Guid subUserId)
+    {
+        var subscriptions = await _context.Subscriptions
+            .Where(it => it.SubUserId == subUserId)
+            .Select(x => _mapper.Map<SubscriptionModel>(x))
+            .ToListAsync();
+        if (subscriptions == null)
+            throw new SubscriptionException("Subscription not Found");
+
+        return subscriptions;
     }
 }

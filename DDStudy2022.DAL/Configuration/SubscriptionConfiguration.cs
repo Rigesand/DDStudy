@@ -12,5 +12,10 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
             .WithMany(it => it.Subscriptions)
             .HasForeignKey(it => it.UserId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(it => it.SubUser)
+            .WithMany(it => it.Subscribers)
+            .HasForeignKey(it => it.SubUserId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
