@@ -128,7 +128,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("Auth/swagger.json", "Auth");
 });
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseClientRateLimiting();
 app.UseAuthorization();
